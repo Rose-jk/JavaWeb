@@ -1,0 +1,25 @@
+server:
+  port: 8081
+  servlet:
+    context-path: /api
+
+spring:
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/snackshop
+      auto-index-creation: true
+
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+
+jwt:
+  secret: snackshop-secret-key-2023-jwt-token-for-authentication
+  expiration: 86400000  # 24小时
+
+app:
+  cors:
+    allowed-origins: http://localhost:8080,http://localhost:3000
+    allowed-methods: GET,POST,PUT,DELETE,OPTIONS
+    allowed-headers: *
+    allow-credentials: true

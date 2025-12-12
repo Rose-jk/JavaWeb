@@ -1,0 +1,264 @@
+<template>
+  <div class="default-layout">
+    <!-- 顶部导航栏 -->
+    <header class="header">
+      <div class="container mx-auto px-4">
+        <div class="flex items-center justify-between h-16">
+          <!-- Logo -->
+          <router-link to="/" class="flex items-center">
+            <img src="@/assets/logo.png" alt="Logo" class="h-8 mr-2" />
+            <span class="text-xl font-bold text-primary">零食商城</span>
+          </router-link>
+
+          <!-- 导航菜单 -->
+          <nav class="hidden md:flex items-center space-x-6">
+            <router-link 
+              to="/home" 
+              class="nav-link"
+              :class="{ 'active': $route.path === '/home' }"
+            >
+              首页
+            </router-link>
+            <router-link 
+              to="/products" 
+              class="nav-link"
+              :class="{ 'active': $route.path.includes('/products') }"
+            >
+              全部商品
+            </router-link>
+            <router-link 
+              v-if="isAdmin" 
+              to="/admin/dashboard" 
+              class="nav-link"
+            >
+              后台管理
+            </router-link>
+          </nav>
+
+          <!-- 搜索框 -->
+          <div class="hidden md:flex flex-1 max-w-md mx-8">
+            <el-input
+              v-model="searchKeyword"
+              placeholder="搜索商品..."
+              @keyup.enter="handleSearch"
+            >
+              <template #append>
+                <el-button @click="handleSearch">
+                  <el-icon><Search /></el-icon>
+                </el-button>
+              </template>
+            </el-input>
+          </div>
+
+          <!-- 用户操作 -->
+          <div class="flex items-center space-x-4">
+            <!-- 购物车 -->
+            <router-link to="/cart" class="relative">
+              <el-badge :value="cartCount" :max="99">
+                <el-button type="text" class="text-gray-600 hover:text-primary">
+                  <el-icon size="20">
+                    <ShoppingCart />
+                  </el-icon>
+                </el-button>
+              </el-badge>
+            </router-link>
+
+            <!-- 用户菜单 -->
+            <div v-if="isLogin">
+              <el-dropdown @command="handleUserCommand">
+                <div class="flex items-center cursor-pointer">
+                  <el-avatar :src="userInfo?.avatar" :size="32" />
+                  <span class="ml-2">{{ userInfo?.nickname }}</span>
+                  <el-icon class="ml-1"><ArrowDown /></el-icon>
+                </div>
+                <template #dropdown>
+                  <el-dropdown-menu>
+                    <el-dropdown-item command="profile">
+                      <el-icon><User /></el-icon>
+                      个人中心
+                    </el-dropdown-item>
+                    <el-dropdown-item command="orders">
+                      <el-icon><Document /></el-icon>
+                      我的订单
+                    </el-dropdown-item>
+                    <el-dropdown-item command="address">
+                      <el-icon><Location /></el-icon>
+                      收货地址
+                    </el-dropdown-item>
+                    <el-dropdown-item divided command="logout">
+                      <el-icon><SwitchButton /></el-icon>
+                      退出登录
+                    </el-dropdown-item>
+                  </el-dropdown-menu>
+                </template>
+              </el-dropdown>
+            </div>
+
+            <!-- 登录/注册按钮 -->
+            <div v-else class="flex items-center space-x-2">
+              <el-button type="text" @click="router.push('/login')">
+                登录
+              </el-button>
+              <span class="text-gray-400">|</span>
+              <el-button type="text" @click="router.push('/register')">
+                注册
+              </el-button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- 主要内容 -->
+    <main class="main">
+      <router-view />
+    </main>
+
+    <!-- 底部 -->
+    <footer class="footer">
+      <div class="container mx-auto px-4 py-8">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+          <!-- 关于我们 -->
+          <div>
+            <h3 class="text-lg font-bold mb-4">关于我们</h3>
+            <p class="text-gray-600">
+              零食商城是一家专业的零食销售平台，提供各类高品质零食，满足您的味蕾需求。
+            </p>
+          </div>
+
+          <!-- 联系我们 -->
+          <div>
+            <h3 class="text-lg font-bold mb-4">联系我们</h3>
+            <ul class="space-y-2 text-gray-600">
+              <li>电话：400-123-4567</li>
+              <li>邮箱：support@snackshop.com</li>
+              <li>地址：XX市XX区XX路XX号</li>
+            </ul>
+          </div>
+
+          <!-- 快速链接 -->
+          <div>
+            <h3 class="text-lg font-bold mb-4">快速链接</h3>
+            <ul class="space-y-2">
+              <li>
+                <router-link to="/products" class="text-gray-600 hover:text-primary">
+                  全部商品
+                </router-link>
+              </li>
+              <li>
+                <router-link to="/user" class="text-gray-600 hover:text-primary">
+                  个人中心
+                </router-link>
+              </li>
+              <li>
+                <router-link to="/cart" class="text-gray-600 hover:text-primary">
+                  购物车
+                </router-link>
+              </li>
+            </ul>
+          </div>
+
+          <!-- 关注我们 -->
+          <div>
+            <h3 class="text-lg font-bold mb-4">关注我们</h3>
+            <div class="flex space-x-4">
+              <el-button type="text" icon="Wechat" circle />
+              <el-button type="text" icon="Weibo" circle />
+              <el-button type="text" icon="QQ" circle />
+            </div>
+          </div>
+        </div>
+
+        <!-- 版权信息 -->
+        <div class="mt-8 pt-8 border-t text-center text-gray-500">
+          <p>© 2024 零食商城. All rights reserved.</p>
+        </div>
+      </div>
+    </footer>
+  </div>
+</template>
+
+<script setup lang="ts">
+import { ref, computed } from 'vue'
+import { useRouter } from 'vue-router'
+import { useUserStore } from '@/stores/user'
+import { useCartStore } from '@/stores/cart'
+import {
+  Search,
+  ShoppingCart,
+  User,
+  Document,
+  Location,
+  SwitchButton,
+  ArrowDown,
+} from '@element-plus/icons-vue'
+
+const router = useRouter()
+const userStore = useUserStore()
+const cartStore = useCartStore()
+
+const searchKeyword = ref('')
+
+const isLogin = computed(() => userStore.isLogin)
+const isAdmin = computed(() => userStore.isAdmin)
+const userInfo = computed(() => userStore.userInfo)
+const cartCount = computed(() => cartStore.cartCount)
+
+const handleSearch = () => {
+  if (searchKeyword.value.trim()) {
+    router.push(`/products?keyword=${searchKeyword.value}`)
+  }
+}
+
+const handleUserCommand = async (command: string) => {
+  switch (command) {
+    case 'profile':
+      router.push('/user')
+      break
+    case 'orders':
+      router.push('/order')
+      break
+    case 'address':
+      router.push('/address')
+      break
+    case 'logout':
+      await userStore.logout()
+      router.push('/login')
+      break
+  }
+}
+</script>
+
+<style scoped lang="scss">
+.default-layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.header {
+  background: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.nav-link {
+  @apply text-gray-600 hover:text-primary transition-colors;
+
+  &.active {
+    @apply text-primary font-semibold;
+  }
+}
+
+.main {
+  flex: 1;
+  padding: 20px 0;
+}
+
+.footer {
+  background: #f8f9fa;
+  margin-top: auto;
+}
+</style>
